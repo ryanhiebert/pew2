@@ -9,7 +9,8 @@ import click
 __meta__ = type
 
 
-bin = 'Scripts' if sys.platform == 'win32' else 'bin'
+windows = sys.platform == 'win32'
+bin = 'Scripts' if windows else 'bin'
 
 
 class Context:
@@ -78,7 +79,6 @@ def workon(ctx, venv):
 
     inve = path / bin / 'inve'
 
-    windows = sys.platform == 'win32'
     args = ['powershell' if windows else os.environ['SHELL']]
     or_ctrld = '' if windows else "or 'Ctrl+D' "
     click.echo("Launching subshell in virtual environment. Type "
