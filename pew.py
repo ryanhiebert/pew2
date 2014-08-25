@@ -69,13 +69,13 @@ def ls(ctx, path):
 
 
 @pew.command()
-@click.argument('venv')
+@click.argument('env')
 @pass_context
-def workon(ctx, venv):
+def workon(ctx, env):
     """Enter a virtual environment"""
-    path = ctx.workon_home / venv
+    path = ctx.workon_home / env
     if not path.exists():
-        sys.exit("Environment '{}' does not exist.".format(venv))
+        sys.exit("Environment '{}' does not exist.".format(env))
 
     inve = path / bin / 'inve'
 
