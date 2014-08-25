@@ -1,6 +1,6 @@
 import os
 import sys
-from glob import glob
+from pathlib import Path
 
 import click
 
@@ -14,21 +14,39 @@ bin = 'Scripts' if sys.platform == 'win32' else 'bin'
 class Context:
     """Manage the context of commands"""
 
-    def envs(self):
-        return sorted(set(
-            env.split(os.path.sep)[-3] for env in
-            glob(os.path.join(self.workon_home, '*', bin, 'python*'))))
+    def __init__(self):
+        """Shared script context"""
+        virtual_env = os.environ.get('VIRTUAL_ENV')
+        workon_home = os.path.expanduser(os.environ.get('WORKON_HOME', ''))
+
+        if not workon_home:
+            sys.exit('WORKON_HOME not set')
+
+        if virtual_env:
+            self.virtual_env = Path(virtual_env)
+        if workon_home:
+            self.workon_home = Path(workon_home)
+
+    def envs(self, path):
+        """List all virtual environments in path"""
+        home = self.workon_home / path
+        pythons = home.glob('*/{}/python'.format(bin))
+        envs = set(path.parent.parent.relative_to(home) for path in pythons)
+        return envs
+
+    def dirs(self, path):
+        """List all directories that aren't virtual environments in path"""
+        home = self.workon_home / path
+        dirs = set(f.relative_to(home) for f in home.iterdir() if f.is_dir())
+        return dirs - self.envs(path)
 
 
 pass_context = click.make_pass_decorator(Context, ensure=True)
 
 
 @click.group()
-@pass_context
-def pew(ctx):
+def pew():
     """Manage your virtual environments"""
-    ctx.virtual_env = os.environ.get('VIRTUAL_ENV')
-    ctx.workon_home = os.path.expanduser(os.environ.get('WORKON_HOME'))
 
 
 @pew.command()
@@ -39,10 +57,13 @@ def show(ctx):
 
 
 @pew.command()
+@click.argument('path', default='')
 @pass_context
-def ls(ctx):
+def ls(ctx, path):
     """List available virtual environments"""
-    click.echo(' '.join(ctx.envs()))
+    envs = [str(env) for env in ctx.envs(path)]
+    dirs = [str(dir) + '/' for dir in ctx.dirs(path)]
+    click.echo(' '.join(sorted(envs + dirs)))
 
 
 @pew.command()
