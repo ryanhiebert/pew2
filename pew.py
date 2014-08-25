@@ -22,10 +22,10 @@ class Context:
         if not workon_home:
             sys.exit('WORKON_HOME not set')
 
+        self.workon_home = Path(workon_home)
+        self.virtual_env = None
         if virtual_env:
             self.virtual_env = Path(virtual_env)
-        if workon_home:
-            self.workon_home = Path(workon_home)
 
     def envs(self, path):
         """List all virtual environments in path"""
