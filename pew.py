@@ -1,5 +1,6 @@
 import os
 import sys
+from subprocess import check_call
 from pathlib import Path
 
 import click
@@ -71,4 +72,16 @@ def ls(ctx, path):
 @pass_context
 def workon(ctx, venv):
     """Enter a virtual environment"""
-    click.echo(venv)
+    path = ctx.workon_home / venv
+    if not path.exists():
+        sys.exit("Environment '{}' does not exist.".format(venv))
+
+    inve = path / bin / 'inve'
+
+    windows = sys.platform == 'win32'
+    args = ['powershell' if windows else os.environ['SHELL']]
+    or_ctrld = '' if windows else "or 'Ctrl+D' "
+    click.echo("Launching subshell in virtual environment. Type "
+               "'exit' {}to return.\n".format(or_ctrld), err=True)
+
+    check_call(['python', str(inve)] + args)
