@@ -1,6 +1,7 @@
 import os
 import sys
 from subprocess import check_call
+from contextlib import contextmanager
 from pathlib import Path
 
 import click
@@ -68,20 +69,44 @@ def ls(ctx, path):
     click.echo(' '.join(sorted(envs + dirs)))
 
 
-@pew.command()
+@pew.command(name='in')
 @click.argument('env')
+@click.argument('command', required=False)
+@click.argument('args', nargs=-1)
 @pass_context
-def workon(ctx, env):
+def inve(ctx, env, command, args):
     """Enter a virtual environment"""
     path = ctx.workon_home / env
     if not path.exists():
         sys.exit("Environment '{}' does not exist.".format(env))
 
-    inve = path / bin / 'inve'
+    if not command:
+        command = 'powershell' if windows else os.environ['SHELL']
 
-    args = ['powershell' if windows else os.environ['SHELL']]
-    or_ctrld = '' if windows else "or 'Ctrl+D' "
-    click.echo("Launching subshell in virtual environment. Type "
-               "'exit' {}to return.\n".format(or_ctrld), err=True)
+    with temp_environ():
+        os.environ['VIRTUAL_ENV'] = str(path)
+        os.environ['PATH'] = os.pathsep.join(
+            [str(path / bin), os.environ['PATH']])
 
-    check_call(['python', str(inve)] + args)
+        os.unsetenv('PYTHONHOME')
+        os.unsetenv('__PYVENV_LAUNCHER__')
+
+        try:
+            return check_call([command] + list(args), shell=windows)
+            # need to have shell=True on windows, otherwise the PYTHONPATH
+            # won't inherit the PATH
+        except OSError as e:
+            if e.errno == 2:
+                click.echo('Unable to find {}'.format(command))
+            else:
+                raise
+
+
+@contextmanager
+def temp_environ():
+    environ = dict(os.environ)
+    try:
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(environ)
