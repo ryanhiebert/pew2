@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 from subprocess import check_call
 from contextlib import contextmanager
 from pathlib import Path
@@ -111,6 +112,18 @@ def new(ctx, env, python):
     path = ctx.workon_home / env
     extra = ['--python={}'.format(python)] if python else []
     check_call(['virtualenv', str(path)] + extra)
+
+
+@pew.command()
+@click.argument('envs', nargs=-1)
+@pass_context
+def rm(ctx, envs):
+    """Remove virtual environments."""
+    for env in envs:
+        path = ctx.workon_home / env
+        if path == ctx.virtual_env:
+            sys.exit('You cannot remove the active environment.')
+        shutil.rmtree(str(path))
 
 
 @contextmanager
