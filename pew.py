@@ -102,6 +102,17 @@ def inve(ctx, env, command, args):
                 raise
 
 
+@pew.command()
+@click.argument('env')
+@click.option('--python', '-p', help='Path to Python interpreter.')
+@pass_context
+def new(ctx, env, python):
+    """Create a new virtual environment"""
+    path = ctx.workon_home / env
+    extra = ['--python={}'.format(python)] if python else []
+    check_call(['virtualenv', str(path)] + extra)
+
+
 @contextmanager
 def temp_environ():
     environ = dict(os.environ)
