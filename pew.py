@@ -54,7 +54,7 @@ def ls(path):
     # Directories that aren't virtual environments
     dirs = {f.relative_to(home) for f in home.iterdir() if f.is_dir()} - envs
 
-    listables = [str(env) for env in envs]
+    environments = [str(env) for env in envs]
     directories = [str(dir) + '/' for dir in dirs]  # Add slash to directories
     click.echo(' '.join(sorted(environments + directories)))
 
