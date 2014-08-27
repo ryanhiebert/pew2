@@ -104,7 +104,7 @@ def new(env, python):
 @pew.command()
 @click.argument('envs', nargs=-1)
 def rm(envs):
-    """Remove virtual environments."""
+    """Remove virtual environments"""
     for env in envs:
         path = workon_home / env
         if path == virtual_env:
