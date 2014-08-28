@@ -18,6 +18,14 @@ bin = 'Scripts' if windows else 'bin'
 virtual_env, workon_home = None, None
 
 
+def project_dir(path):
+    """Get the project directory at the given path"""
+    try:
+        return Path((path / '.project').open().read().strip())
+    except:
+        return None
+
+
 @click.group()
 def pew():
     """Manage your virtual environments"""
@@ -83,7 +91,7 @@ def inve(env, command, args):
     if not command:
         command = 'powershell' if windows else os.environ['SHELL']
 
-    with temp_environ():
+    with chdir(project_dir(path) or Path.cwd()), temp_environ():
         os.environ['VIRTUAL_ENV'] = str(path)
         os.environ['PATH'] = os.pathsep.join(
             [str(path / bin), os.environ['PATH']])
@@ -105,11 +113,15 @@ def inve(env, command, args):
 @pew.command()
 @click.argument('env')
 @click.option('--python', '-p', help='Path to Python interpreter.')
-def new(env, python):
+@click.option('--project', '-a', help='Path to project directory.')
+def new(env, python, project):
     """Create a new virtual environment"""
     path = workon_home / env
     extra = ['--python={}'.format(python)] if python else []
     check_call(['virtualenv', str(path)] + extra)
+
+    if project:
+        (path / '.project').open('w').write(str(Path(project).absolute()))
 
 
 @pew.command()
@@ -131,3 +143,13 @@ def temp_environ():
     finally:
         os.environ.clear()
         os.environ.update(environ)
+
+
+@contextmanager
+def chdir(dirname):
+    curdir = os.getcwd()
+    try:
+        os.chdir(str(dirname))
+        yield
+    finally:
+        os.chdir(curdir)
