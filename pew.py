@@ -38,7 +38,8 @@ def pew():
 @pew.command()
 def show():
     """Show the active virtual environment"""
-    click.echo(virtual_env or 'No virtual environment active.')
+    if virtual_env:
+        click.echo(virtual_env)
 
 
 @pew.command()
