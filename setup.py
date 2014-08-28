@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='pew2',
+    name='pew',
     version='0.1',
     description='Tools to manage virtual environments',
     author='Ryan Hiebert',
@@ -14,7 +14,7 @@ setup(
         'click>=3',
         'pathlib>=1',
     ],
-    entry_points={'console_scripts': ['pew2 = pew:pew']},
+    entry_points={'console_scripts': ['pew = pew:pew']},
     classifiers=[
         'Programming Language :: Python :: 3',
         'Intended Audience :: Developers',
