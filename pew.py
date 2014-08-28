@@ -36,10 +36,20 @@ def pew():
 
 
 @pew.command()
-def show():
+@click.option('--relative', is_flag=True,
+              help='Attempt to construct a useful relative path.')
+def show(relative):
     """Show the active virtual environment"""
-    if virtual_env:
-        click.echo(virtual_env)
+    if not virtual_env:
+        return
+
+    if relative:
+        try:
+            return click.echo(virtual_env.relative_to(workon_home))
+        except ValeuError:
+            pass
+
+    click.echo(virtual_env)
 
 
 @pew.command()
