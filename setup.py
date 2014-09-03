@@ -12,7 +12,7 @@ setup(
     install_requires=[
         'setuptools>=0.7',
         'click>=3',
-        'pathlib>=1',
+        'pathlib>=1.0.1',
     ],
     entry_points={'console_scripts': ['pew = pew:pew']},
     classifiers=[
