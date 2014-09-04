@@ -8,9 +8,6 @@ from pathlib import Path
 import click
 
 
-__meta__ = type
-
-
 windows = sys.platform == 'win32'
 bin = 'Scripts' if windows else 'bin'
 
