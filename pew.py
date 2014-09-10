@@ -1,7 +1,7 @@
 import os
 import sys
 import shutil
-from subprocess import check_call
+from subprocess import check_call, call
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -97,7 +97,7 @@ def inve(env, command, args):
         os.unsetenv('__PYVENV_LAUNCHER__')
 
         try:
-            return check_call([command] + list(args), shell=windows)
+            sys.exit(call([command] + list(args), shell=windows))
             # need to have shell=True on windows, otherwise the PYTHONPATH
             # won't inherit the PATH
         except OSError as e:
