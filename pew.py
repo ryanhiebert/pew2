@@ -51,7 +51,7 @@ def show(relative):
     if relative:
         try:
             return click.echo(virtual_env.relative_to(workon_home))
-        except ValeuError:
+        except ValueError:
             pass
 
     click.echo(virtual_env)
