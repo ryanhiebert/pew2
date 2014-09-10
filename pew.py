@@ -109,6 +109,18 @@ def inve(env, command, args):
 
 @pew.command()
 @click.argument('env')
+def workon(env):
+    """Enter a virtual environment - Deprecated.
+
+    'in' is a much more flexible command, that completely encompasses
+    all behavior that 'workon' has. Because of that, 'workon' is
+    deprecated in favor of just using a bare 'in'.
+    """
+    inve([env])
+
+
+@pew.command()
+@click.argument('env')
 @click.option('--python', '-p', help='Path to Python interpreter.')
 @click.option('--project', '-a', help='Path to project directory.')
 def new(env, python, project):
