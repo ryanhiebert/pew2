@@ -11,8 +11,25 @@ import click
 windows = sys.platform == 'win32'
 bin = 'Scripts' if windows else 'bin'
 
-# Global variables used by pew
-virtual_env, workon_home = None, None
+
+def virtual_env():
+    """Find the current environment.
+
+    Check the 'VIRTUAL_ENV' environment variable for the path to the current
+    environment. Return None if not in a virtual environment.
+    """
+    virtual_env = os.environ.get('VIRTUAL_ENV')
+    return Path(virtual_env) if virtual_env else None
+
+
+def workon_home():
+    """Find the path to the workon home directory.
+
+    Check the 'WORKON_HOME' environment variable for the path to the directory
+    where pew looks for virtual environments by default. Will raise TypeError
+    if the 'WORKON_HOME' environment variable is not set.
+    """
+    return Path(os.path.expanduser(os.environ.get('WORKON_HOME')))
 
 
 def project_dir(path):
@@ -26,18 +43,8 @@ def project_dir(path):
 @click.group()
 def pew():
     """Manage your virtual environments"""
-    global virtual_env, workon_home
-
-    virtual_env = os.environ.get('VIRTUAL_ENV')
-    workon_home = os.path.expanduser(os.environ.get('WORKON_HOME', ''))
-
-    if not workon_home:
+    if not os.environ.get('WORKON_HOME'):
         sys.exit('WORKON_HOME not set')
-
-    workon_home = Path(workon_home)
-
-    if virtual_env:
-        virtual_env = Path(virtual_env)
 
 
 @pew.command()
@@ -45,23 +52,23 @@ def pew():
               help='Attempt to construct a useful relative path.')
 def show(relative):
     """Show the active virtual environment"""
-    if not virtual_env:
+    if not virtual_env():
         return
 
     if relative:
         try:
-            return click.echo(virtual_env.relative_to(workon_home))
+            return click.echo(virtual_env().relative_to(workon_home()))
         except ValueError:
             pass
 
-    click.echo(virtual_env)
+    click.echo(virtual_env())
 
 
 @pew.command()
 @click.argument('path', default='')
 def ls(path):
     """List available virtual environments"""
-    home = workon_home / path
+    home = workon_home() / path
 
     # Virtual environments
     pythons = home.glob('*/{}/python*'.format(bin))
@@ -81,7 +88,7 @@ def ls(path):
 @click.argument('args', nargs=-1)
 def inve(env, command, args):
     """Enter a virtual environment"""
-    path = workon_home / env
+    path = workon_home() / env
     if not path.exists():
         sys.exit("Environment '{}' does not exist.".format(env))
 
@@ -125,7 +132,7 @@ def workon(env):
 @click.option('--project', '-a', help='Path to project directory.')
 def new(env, python, project):
     """Create a new virtual environment"""
-    path = workon_home / env
+    path = workon_home() / env
     extra = ['--python={}'.format(python)] if python else []
     check_call(['virtualenv', str(path)] + extra)
 
@@ -138,8 +145,8 @@ def new(env, python, project):
 def rm(envs):
     """Remove virtual environments"""
     for env in envs:
-        path = workon_home / env
-        if path == virtual_env:
+        path = workon_home() / env
+        if path == virtual_env():
             sys.exit('You cannot remove the active environment.')
         shutil.rmtree(str(path))
 
