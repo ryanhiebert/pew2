@@ -82,7 +82,7 @@ def ls(path):
     click.echo(' '.join(sorted(environments + directories)))
 
 
-@pew.command(name='in')
+@pew.command(name='in', context_settings={'allow_interspersed_args': False})
 @click.argument('env')
 @click.argument('command', required=False)
 @click.argument('args', nargs=-1)
