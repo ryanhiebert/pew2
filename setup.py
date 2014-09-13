@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pew',
-    version='0.1',
+    version='0.2',
     description='Tools to manage virtual environments',
     author='Ryan Hiebert',
     author_email='ryan@ryanhiebert.com',
