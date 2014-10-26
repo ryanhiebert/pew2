@@ -72,10 +72,11 @@ def ls(path):
 
     # Virtual environments
     pythons = home.glob('*/{}/python*'.format(bin))
-    envs = {path.parent.parent.relative_to(home) for path in pythons}
+    envs = set(path.parent.parent.relative_to(home) for path in pythons)
 
     # Directories that aren't virtual environments
-    dirs = {f.relative_to(home) for f in home.iterdir() if f.is_dir()} - envs
+    dirs = set(f.relative_to(home) for f in home.iterdir() if f.is_dir())
+    dirs -= envs
 
     environments = [str(env) for env in envs]
     directories = [str(dir) + '/' for dir in dirs]  # Add slash to directories
@@ -95,23 +96,24 @@ def inve(env, command, args):
     if not command:
         command = 'powershell' if windows else os.environ['SHELL']
 
-    with chdir(project_dir(path) or Path.cwd()), temp_environ():
-        os.environ['VIRTUAL_ENV'] = str(path)
-        os.environ['PATH'] = os.pathsep.join(
-            [str(path / bin), os.environ['PATH']])
+    with chdir(project_dir(path) or Path.cwd()):
+        with temp_environ():
+            os.environ['VIRTUAL_ENV'] = str(path)
+            os.environ['PATH'] = os.pathsep.join(
+                [str(path / bin), os.environ['PATH']])
 
-        os.unsetenv('PYTHONHOME')
-        os.unsetenv('__PYVENV_LAUNCHER__')
+            os.unsetenv('PYTHONHOME')
+            os.unsetenv('__PYVENV_LAUNCHER__')
 
-        try:
-            sys.exit(call([command] + list(args), shell=windows))
-            # need to have shell=True on windows, otherwise the PYTHONPATH
-            # won't inherit the PATH
-        except OSError as e:
-            if e.errno == 2:
-                click.echo('Unable to find {}'.format(command))
-            else:
-                raise
+            try:
+                sys.exit(call([command] + list(args), shell=windows))
+                # need to have shell=True on windows, otherwise the PYTHONPATH
+                # won't inherit the PATH
+            except OSError as e:
+                if e.errno == 2:
+                    click.echo('Unable to find {}'.format(command))
+                else:
+                    raise
 
 
 @pew.command()
