@@ -8,6 +8,12 @@ from pathlib import Path
 import click
 
 
+try:
+    str = unicode
+except:
+    pass
+
+
 windows = sys.platform == 'win32'
 bin = 'Scripts' if windows else 'bin'
 
